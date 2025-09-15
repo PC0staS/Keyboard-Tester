@@ -1,69 +1,109 @@
-# React + TypeScript + Vite
+# Fast Keyboard Tester
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tester de teclado rápido hecho con React + Vite + Tailwind. Detecta las teclas por su posición física usando `event.code` y pinta el estado de cada tecla al presionarla.
 
-Currently, two official plugins are available:
+## ✨ Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Detección por posición física con `event.code` (no por carácter), ideal para distintos layouts.
+- Distribución en filas: función/escape, fila superior, QWERTY, ASDF, ZXCV, inferior, navegación y numpad (dividido en filas compactas).
+- Estados visuales:
+  - Azul: tecla actualmente pulsada (activa)
+  - Verde: tecla ya probada (se pulsó al menos una vez)
+- Evita el scroll y navegación del navegador al usar Space/Arrows/Home/End/PageUp/PageDown mientras pruebas.
+- Indicador del último evento: `code`, `key` y modificadores (Ctrl/Shift/Alt/Meta).
+- Botón para resetear el historial de teclas probadas.
 
-## Expanding the ESLint configuration
+## 🧠 ¿Cómo funciona?
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Se escuchan los eventos `keydown` y `keyup` del `window` y se usa `event.code` como identificador. Esto refleja la posición física de la tecla en el teclado (por ejemplo, `KeyA`, `Digit1`, `NumpadEnter`).
+- En el render, se muestra una etiqueta legible a partir del `code` (por ejemplo `KeyA → A`, `Digit1 → 1`, `NumpadAdd → +`).
+- `keydown` añade la tecla a:
+  - `activeKeys` (mientras está pulsada)
+  - `testedKeys` (histórico de teclas ya probadas)
+- `keyup` elimina la tecla de `activeKeys`.
+- Cuando la ventana pierde el foco (`blur`), se limpia `activeKeys` para evitar “teclas atascadas”.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## ⌨️ Filas de teclado incluidas
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- Escape y funciones: `Escape`, `F1…F12`, `PrintScreen`, `ScrollLock`, `Pause`
+- Fila superior: `IntlBackslash`, `Digit1…Digit0`, `Minus`, `Equal`, `Backspace`
+- QWERTY: `Tab`, `KeyQ…KeyP`, `BracketLeft`, `BracketRight`, `Backslash`
+- ASDF: `CapsLock`, `KeyA…KeyL`, `Semicolon`, `Quote`, `Enter`
+- ZXCV: `ShiftLeft`, `KeyZ…KeyM`, `Comma`, `Period`, `Slash`, `ShiftRight`, `ArrowUp`
+- Inferior: `ControlLeft`, `MetaLeft`, `AltLeft`, `Space`, `AltRight`, `MetaRight`, `ControlRight`, `ArrowLeft`, `ArrowDown`, `ArrowRight`, `Delete`, `Insert`
+- Navegación: `Home`, `End`, `PageUp`, `PageDown`
+- Numpad (dividido en filas):
+  - `NumLock`, `NumpadDivide`, `NumpadMultiply`, `NumpadSubtract`
+  - `Numpad7`, `Numpad8`, `Numpad9`, `NumpadAdd`
+  - `Numpad4`, `Numpad5`, `Numpad6`
+  - `Numpad1`, `Numpad2`, `Numpad3`, `NumpadEnter`
+  - `Numpad0`, `NumpadDecimal`
+- Funciones extendidas: `F13…F24`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Ten en cuenta que algunas teclas dependen del hardware/SO/navegador y pueden no disparar eventos (por ejemplo, `PrintScreen` en macOS).
+
+## 🚀 Ejecutar en local
+
+Requisitos: Node.js 18+ (o Bun/Pnpm/Yarn si prefieres). Instala dependencias y levanta el servidor de desarrollo.
+
+Con npm:
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Con pnpm:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev
 ```
+
+Con bun:
+
+```bash
+bun install
+bun dev
+```
+
+Build y preview:
+
+```bash
+npm run build
+npm run preview
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+## 🧩 Pila técnica
+
+- React 19 + TypeScript
+- Vite 7
+- Tailwind CSS 4
+- ESLint (config React)
+
+## 📝 Notas y limitaciones
+
+- `event.code` describe la posición física de la tecla (por ejemplo `KeyZ`) y no el carácter (`z`/`y`). Esto es ideal para testers físicos y distintos layouts.
+- Algunas teclas especiales pueden no emitir eventos en ciertos navegadores o SO (por ejemplo `PrintScreen` en macOS).
+- La tecla `Meta` (Windows/Command) se muestra como "Windows/Command" y su comportamiento puede variar en cada plataforma.
+- Para añadir o reordenar filas, edita `keyRows` en `src/App.tsx`.
+
+## 🛠️ Personalización rápida
+
+- Cambiar colores o tamaños: ajusta clases Tailwind en `src/App.tsx`.
+- Añadir más teclas o layouts internacionales: agrega nuevas filas/códigos a `keyRows`. Puedes consultar la lista de `KeyboardEvent.code` en MDN.
+- Si quieres evitar o permitir el scroll al probar, ajusta la función `shouldPreventDefault` en `src/App.tsx`.
+
+## 🤝 Contribuir
+
+Sugerencias y PRs son bienvenidas. Si reportas un problema, incluye tu SO, navegador, y el `event.code`/`event.key` implicado.
+
+## 📄 Licencia
+
+Este proyecto se distribuye "tal cual" para uso educativo/demostrativo. Añade tu licencia preferida (por ejemplo MIT) si lo publicas.
